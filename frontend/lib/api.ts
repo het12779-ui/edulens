@@ -29,3 +29,11 @@ export async function uploadYoutube(url: string) {
   const { data } = await api.post("/api/upload/youtube", form);
   return data;
 }
+
+export async function askChat(contentId: string, question: string) {
+  const { data } = await api.post("/api/chat", {
+    content_id: contentId,
+    question,
+  });
+  return data;
+}
