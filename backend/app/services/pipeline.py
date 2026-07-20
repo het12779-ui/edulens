@@ -2,7 +2,8 @@
 Glues every service together into one function that runs as a FastAPI
 BackgroundTask. This IS "the pipeline" your architecture diagram shows:
 
-  raw file/url -> transcript/text -> outline (LLM)
+  raw file/url -> transcript/text -> chunks -> vectorstore (RAG indexing)
+                                   -> outline (LLM)
                                    -> flashcards (LLM)
                                    -> saved to DB, status flipped to "ready"
 
@@ -12,7 +13,7 @@ this function's body into a Celery task so long videos don't tie up a web
 worker — mention this explicitly in your report as the production upgrade path.
 """
 from app.db.supabase_client import save_content_record
-from app.services import transcription, pdf_extract, youtube, ai_generate
+from app.services import transcription, pdf_extract, youtube, ai_generate, vectorstore
 
 
 def process_content(content_id: str, path_or_url: str, source_type: str):
@@ -32,9 +33,15 @@ def process_content(content_id: str, path_or_url: str, source_type: str):
             filename = None
         else:  # pdf
             pages = pdf_extract.extract_pdf_pages(path_or_url)
+            # reshape pages into the same {page, text} interface chunking expects
+            segments = [{"page": p["page"], "text": p["text"]} for p in pages]
             full_text = pdf_extract.pages_to_full_text(pages)
             is_video = False
             filename = None
+
+        # --- RAG indexing (Hour 13) ---
+        chunks = vectorstore.chunk_segments(segments)
+        vectorstore.index_content(content_id, chunks)
 
         # --- AI generation (outline, flashcards) ---
         outline_raw = ai_generate.generate_outline(full_text, is_video)
