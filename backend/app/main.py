@@ -4,7 +4,7 @@ Run with: uvicorn app.main:app --reload --port 8000
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
-from app.routers import upload
+from app.routers import upload, chat
 
 settings = get_settings()
 
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(upload.router)
+app.include_router(chat.router)
 
 
 @app.get("/health")

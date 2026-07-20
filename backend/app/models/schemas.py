@@ -31,3 +31,20 @@ class ProcessResult(BaseModel):
     transcript_preview: Optional[str] = None
     outline: List[OutlineItem] = []
     flashcards: List[Flashcard] = []
+
+
+class ChatRequest(BaseModel):
+    content_id: str
+    question: str
+
+
+class ChatSource(BaseModel):
+    content_id: str
+    excerpt: str
+    timestamp_seconds: Optional[float] = None
+    page_number: Optional[int] = None
+
+
+class ChatResponse(BaseModel):
+    answer: str
+    sources: List[ChatSource] = []

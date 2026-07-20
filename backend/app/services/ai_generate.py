@@ -1,8 +1,9 @@
 """
 Every place we ask the LLM to produce something structured about the content
-lives here — outline, flashcards, and later (Hour 25) the knowledge graph.
+lives here — outline, flashcards, and (this hour) chat answers grounded in
+retrieved context.
 """
-from app.services.llm import ask_llm_json
+from app.services.llm import ask_llm, ask_llm_json
 
 
 def generate_outline(full_text: str, is_video: bool) -> list[dict]:
@@ -37,3 +38,19 @@ CONTENT:
 """
     data = ask_llm_json(prompt, system="You are an expert tutor creating study flashcards.")
     return data.get("flashcards", [])
+
+
+def answer_with_context(question: str, retrieved_chunks: list[dict]) -> str:
+    context = "\n\n".join(
+        f"[Source ref: {c['source_ref']}] {c['text']}" for c in retrieved_chunks
+    )
+    prompt = f"""
+Answer the question using ONLY the context below. Cite the source ref(s) you
+used inline like (ref: 123.4). If the answer isn't in the context, say so.
+
+CONTEXT:
+{context}
+
+QUESTION: {question}
+"""
+    return ask_llm(prompt, system="You are a helpful study assistant that answers strictly from provided context.")
