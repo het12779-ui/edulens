@@ -27,6 +27,9 @@ def download_youtube_audio(url: str) -> tuple[str, str]:
         }],
         "quiet": True,
         "noplaylist": True,
+        "extractor_args": {
+        "youtube": {"player_client": ["android"]}
+    },
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:

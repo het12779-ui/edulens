@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     openai_api_key: str = ""
 
-    whisper_model_size: str = "base"
+    whisper_model_size: str = "tiny"
 
     supabase_url: str = ""
     supabase_key: str = ""
