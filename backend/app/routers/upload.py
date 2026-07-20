@@ -5,17 +5,18 @@ for now we just get the upload mechanics working end-to-end.
 """
 import os
 import uuid
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, BackgroundTasks, HTTPException
 from app.config import get_settings
 from app.models.schemas import UploadResponse
 from app.db.supabase_client import save_content_record, get_content_record, list_content_records
+from app.services.pipeline import process_content
 
 router = APIRouter(prefix="/api", tags=["upload"])
 settings = get_settings()
 
 
 @router.post("/upload/file", response_model=UploadResponse)
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     content_id = str(uuid.uuid4())
     ext = os.path.splitext(file.filename)[1].lower()
 
@@ -36,12 +37,14 @@ async def upload_file(file: UploadFile = File(...)):
         "status": "queued",
     })
 
+    background_tasks.add_task(process_content, content_id, save_path, source_type)
+
     return UploadResponse(content_id=content_id, filename=file.filename,
                            source_type=source_type, status="queued")
 
 
 @router.post("/upload/youtube", response_model=UploadResponse)
-async def upload_youtube(url: str = Form(...)):
+async def upload_youtube(background_tasks: BackgroundTasks, url: str = Form(...)):
     content_id = str(uuid.uuid4())
 
     save_content_record(content_id, {
@@ -49,6 +52,8 @@ async def upload_youtube(url: str = Form(...)):
         "source_type": "youtube",
         "status": "queued",
     })
+
+    background_tasks.add_task(process_content, content_id, url, "youtube")
 
     return UploadResponse(content_id=content_id, filename=url,
                            source_type="youtube", status="queued")
