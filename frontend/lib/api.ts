@@ -30,6 +30,16 @@ export async function uploadYoutube(url: string) {
   return data;
 }
 
+export async function getLibrary(): Promise<ContentRecord[]> {
+  const { data } = await api.get("/api/library");
+  return data;
+}
+
+export async function getContent(id: string): Promise<ContentRecord> {
+  const { data } = await api.get(`/api/content/${id}`);
+  return data;
+}
+
 export async function askChat(contentId: string, question: string) {
   const { data } = await api.post("/api/chat", {
     content_id: contentId,

@@ -1,3 +1,4 @@
+// @ts-ignore
 import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -17,6 +18,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span className="w-7 h-7 rounded-lg bg-brand-500 grid place-items-center text-sm">EL</span>
               EduLens
             </Link>
+            <div className="flex items-center gap-6 text-sm text-slate-300">
+              <Link href="/upload" className="hover:text-white transition-colors">Upload</Link>
+              <Link href="/dashboard" className="hover:text-white transition-colors">Library</Link>
+            </div>
           </nav>
         </header>
         <main className="max-w-6xl mx-auto px-6 py-10">{children}</main>
