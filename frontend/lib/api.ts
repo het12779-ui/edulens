@@ -6,12 +6,26 @@ export const api = axios.create({
 
 export type ContentStatus = "queued" | "processing" | "ready" | "failed";
 
+export interface OutlineItem {
+  title: string;
+  summary: string;
+  timestamp_seconds?: number | null;
+  page_number?: number | null;
+}
+
+export interface Flashcard {
+  term: string;
+  definition: string;
+}
+
 export interface ContentRecord {
   id: string;
   filename: string;
   source_type: "pdf" | "video" | "youtube";
   status: ContentStatus;
   transcript_preview?: string;
+  outline?: OutlineItem[];
+  flashcards?: Flashcard[];
 }
 
 export async function uploadFile(file: File) {

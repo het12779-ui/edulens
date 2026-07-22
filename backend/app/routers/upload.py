@@ -4,8 +4,10 @@ Background processing (transcription, LLM generation) gets wired in Hour 12 —
 for now we just get the upload mechanics working end-to-end.
 """
 import os
+import glob
 import uuid
 from fastapi import APIRouter, UploadFile, File, Form, BackgroundTasks, HTTPException
+from fastapi.responses import FileResponse
 from app.config import get_settings
 from app.models.schemas import UploadResponse
 from app.db.supabase_client import save_content_record, get_content_record, list_content_records
@@ -70,3 +72,12 @@ async def get_content(content_id: str):
 @router.get("/library")
 async def library():
     return list_content_records()
+
+@router.get("/media/{content_id}")
+async def get_media(content_id: str):
+    """Serves the raw uploaded video/audio file for the <video> player.
+    Looks up the file by content_id prefix regardless of extension."""
+    matches = glob.glob(os.path.join(get_settings().upload_dir, f"{content_id}.*"))
+    if not matches:
+        raise HTTPException(404, "Media file not found")
+    return FileResponse(matches[0])

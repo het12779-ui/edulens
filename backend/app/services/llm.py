@@ -1,7 +1,7 @@
 """
 Single abstraction over the LLM provider so the rest of the app never cares
-whether we're calling Groq or OpenAI. Swapping providers later is a one-line
-config change — worth mentioning in your viva as evidence of clean abstraction.
+whether we're calling Groq, OpenAI, or Gemini. Swapping providers is a
+one-line config change.
 """
 import json
 from app.config import get_settings
@@ -16,16 +16,11 @@ def _call_groq(prompt: str, system: str = "", json_mode: bool = False) -> str:
     if system:
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
-
     kwargs = {}
     if json_mode:
         kwargs["response_format"] = {"type": "json_object"}
-
     resp = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",  # Updated: 3.1 decommissioned
-        messages=messages,
-        temperature=0.2,
-        **kwargs,
+        model="llama-3.3-70b-versatile", messages=messages, temperature=0.2, **kwargs,
     )
     return resp.choices[0].message.content
 
@@ -37,24 +32,41 @@ def _call_openai(prompt: str, system: str = "", json_mode: bool = False) -> str:
     if system:
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
-
     kwargs = {}
     if json_mode:
         kwargs["response_format"] = {"type": "json_object"}
-
     resp = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        temperature=0.2,
-        **kwargs,
+        model="gpt-4o-mini", messages=messages, temperature=0.2, **kwargs,
     )
     return resp.choices[0].message.content
+
+
+def _call_gemini(prompt: str, system: str = "", json_mode: bool = False) -> str:
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=settings.gemini_api_key)
+
+    config = types.GenerateContentConfig(
+        temperature=0.2,
+        system_instruction=system if system else None,
+        response_mime_type="application/json" if json_mode else "text/plain",
+    )
+
+    resp = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=config,
+    )
+    return resp.text
 
 
 def ask_llm(prompt: str, system: str = "", json_mode: bool = False) -> str:
     """Single entry point every other service should use."""
     if settings.llm_provider == "openai":
         return _call_openai(prompt, system, json_mode)
+    if settings.llm_provider == "gemini":
+        return _call_gemini(prompt, system, json_mode)
     return _call_groq(prompt, system, json_mode)
 
 

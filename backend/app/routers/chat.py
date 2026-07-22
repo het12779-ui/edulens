@@ -11,7 +11,15 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 
 @router.post("", response_model=ChatResponse)
 async def chat(req: ChatRequest):
-    retrieved = vectorstore.retrieve(req.question, [req.content_id], k=6)
+    retrieved = vectorstore.retrieve(req.question, [req.content_id], k=8)
+
+    # --- DEBUG: temporary, remove once retrieval quality is confirmed good ---
+    print(f"\n[chat debug] question={req.question!r}")
+    print(f"[chat debug] retrieved {len(retrieved)} chunks for content_id={req.content_id}")
+    for r in retrieved:
+        print(f"  ref={r['source_ref']!r}  text={r['text'][:120]!r}")
+    print("[chat debug] ---end---\n")
+    # --- END DEBUG ---
 
     answer = ai_generate.answer_with_context(req.question, retrieved)
 

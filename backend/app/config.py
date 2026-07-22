@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     llm_provider: str = "groq"
     groq_api_key: str = ""
     openai_api_key: str = ""
+    gemini_api_key: str = ""
 
     whisper_model_size: str = "tiny"
 

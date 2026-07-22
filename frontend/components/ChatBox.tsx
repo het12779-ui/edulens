@@ -10,7 +10,13 @@ interface Message {
   sources?: { content_id: string; excerpt: string; timestamp_seconds?: number | null; page_number?: number | null }[];
 }
 
-export default function ChatBox({ contentId }: { contentId: string }) {
+export default function ChatBox({
+  contentId,
+  onJumpToSource,
+}: {
+  contentId: string;
+  onJumpToSource?: (ref: number) => void;
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,13 +53,17 @@ export default function ChatBox({ contentId }: { contentId: string }) {
             {m.sources && m.sources.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {m.sources.map((s, j) => (
-                  <span
+                  <button
                     key={j}
-                    className="text-[11px] px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400"
+                    onClick={() => {
+                      const ref = s.timestamp_seconds ?? s.page_number;
+                      if (ref != null) onJumpToSource?.(ref);
+                    }}
+                    className="text-[11px] px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 hover:bg-brand-500/20"
                     title={s.excerpt}
                   >
                     source {s.timestamp_seconds != null ? formatTime(s.timestamp_seconds) : `p.${s.page_number}`}
-                  </span>
+                  </button>
                 ))}
               </div>
             )}

@@ -18,7 +18,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const load = () => getLibrary().then(setItems).finally(() => setLoading(false));
     load();
-    const interval = setInterval(load, 4000); // poll so status updates without a manual refresh
+    const interval = setInterval(load, 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -38,7 +38,11 @@ export default function DashboardPage() {
 
       <div className="grid md:grid-cols-3 gap-4">
         {items.map((item) => (
-          <div key={item.id} className="card p-5 border transition-colors">
+          <Link
+            key={item.id}
+            href={`/content/${item.id}`}
+            className="card p-5 border hover:border-brand-500/50 transition-colors"
+          >
             <div className="flex items-center justify-between mb-3">
               <span className="badge bg-white/5 text-slate-300 uppercase">{item.source_type}</span>
               <span className={`badge ${statusColor[item.status]}`}>{item.status}</span>
@@ -47,7 +51,7 @@ export default function DashboardPage() {
             {item.transcript_preview && (
               <p className="text-slate-500 text-sm mt-2 line-clamp-2">{item.transcript_preview}</p>
             )}
-          </div>
+          </Link>
         ))}
       </div>
     </div>

@@ -45,6 +45,8 @@ def process_content(content_id: str, path_or_url: str, source_type: str):
 
         # --- AI generation (outline, flashcards) ---
         outline_raw = ai_generate.generate_outline(full_text, is_video)
+        print(f"[debug] is_video={is_video}")
+        print(f"[debug] outline_raw={outline_raw}")
         flashcards_raw = ai_generate.generate_flashcards(full_text)
 
         outline = [{
@@ -69,4 +71,3 @@ def process_content(content_id: str, path_or_url: str, source_type: str):
     except Exception as e:
         save_content_record(content_id, {"status": "failed", "error": str(e)})
         print(f"[pipeline] content {content_id} FAILED: {e}")
-        raise
